@@ -5,14 +5,6 @@ import pytest
 
 mycolors = {"blue": "steelblue", "red":"#a76c6e",  "green":"#6a9373", "smoke": "#f2f2f2"}
 
-def eval_RSS(X, y, b0, b1):
-    rss = 0 
-    for ii in range(len(df)):
-        xi = df.loc[ii, "x"]
-        yi = df.loc[ii, "y"]
-        rss += (yi - (b0 + b1 * xi)) ** 2
-    return rss
-
 def plotsurface(X, y, bhist=None):
     xx, yy = np.meshgrid(np.linspace(-3, 3, 300), np.linspace(-1, 5, 300))
     Z = np.zeros((xx.shape[0], yy.shape[0]))
@@ -98,7 +90,48 @@ def sgd(X, y, beta, eta=0.1, num_epochs=100):
         
     return bhist 
 
-
+def sgd_multifeature(X, y, beta, eta=0.1, num_epochs=100):
+    """
+    Peform Stochastic Gradient Descent 
+    
+    :param X: matrix of training features 
+    :param y: vector of training responses 
+    :param beta: initial guess for the parameters
+    :param eta: the learning rate 
+    :param num_epochs: the number of epochs to run 
+    """
+    
+    # initialize history for plotting 
+    bhist = np.zeros((num_epochs+1, len(beta)))
+    bhist[0] = beta
+    
+    # perform steps for all epochs 
+    for epoch in range(1, num_epochs+1):
+        
+        # shuffle indices (randomly)
+        shuffled_inds = list(range(X.shape[0]))
+        np.random.shuffle(shuffled_inds)
+        
+        # loop over training examples, update beta as per the above formulas
+        for instance in shuffled_inds:
+            xi = X[instance]
+            yi = y[instance]
+            
+            # Predict value
+            pred = np.dot(xi, beta)
+            
+            # Compute gradients
+            gradients = 2 * (pred - yi) * xi
+            
+            # Update parameters
+            beta -= eta * gradients
+        
+        # save history 
+        bhist[epoch] = beta
+        
+    # return bhist. Last row 
+    # are the learned parameters. 
+    return bhist 
 
 
 if __name__=="__main__":
